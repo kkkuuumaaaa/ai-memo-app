@@ -1,6 +1,7 @@
 'use client'
 
 import { Memo, MEMO_CATEGORIES, DEFAULT_CATEGORIES } from '@/types/memo'
+import { SortOrder } from '@/hooks/useMemos'
 import MemoItem from './MemoItem'
 
 interface MemoListProps {
@@ -8,11 +9,14 @@ interface MemoListProps {
   loading: boolean
   searchQuery: string
   selectedCategory: string
+  sortOrder: SortOrder
   onSearchChange: (query: string) => void
   onCategoryChange: (category: string) => void
+  onSortChange: (order: SortOrder) => void
   onViewMemo: (memo: Memo) => void
   onEditMemo: (memo: Memo) => void
   onDeleteMemo: (id: string) => void
+  onToggleFavorite: (id: string) => void
   stats: {
     total: number
     filtered: number
@@ -25,11 +29,14 @@ export default function MemoList({
   loading,
   searchQuery,
   selectedCategory,
+  sortOrder,
   onSearchChange,
   onCategoryChange,
+  onSortChange,
   onViewMemo,
   onEditMemo,
   onDeleteMemo,
+  onToggleFavorite,
   stats,
 }: MemoListProps) {
   if (loading) {
@@ -88,6 +95,18 @@ export default function MemoList({
                   )
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* 정렬 */}
+          <div className="sm:w-40">
+            <select
+              value={sortOrder}
+              onChange={e => onSortChange(e.target.value as SortOrder)}
+              className="text-gray-600 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="newest">최신순</option>
+              <option value="oldest">오래된순</option>
             </select>
           </div>
         </div>
@@ -156,6 +175,7 @@ export default function MemoList({
               onView={onViewMemo}
               onEdit={onEditMemo}
               onDelete={onDeleteMemo}
+              onToggleFavorite={onToggleFavorite}
             />
           ))}
         </div>

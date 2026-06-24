@@ -5,11 +5,14 @@ import { v4 as uuidv4 } from 'uuid'
 import { Memo, MemoFormData } from '@/types/memo'
 import { memoStorage } from '@/utils/memoStorage'
 
+export type SortOrder = 'newest' | 'oldest'
+
 export const useMemos = () => {
   const [memos, setMemos] = useState<Memo[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
 
   // 메모 로드
   useEffect(() => {
@@ -33,6 +36,7 @@ export const useMemos = () => {
     const newMemo: Memo = {
       id: uuidv4(),
       ...formData,
+      isFavorite: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -66,6 +70,19 @@ export const useMemos = () => {
     await memoStorage.deleteMemo(id)
     setMemos(prev => prev.filter(memo => memo.id !== id))
   }, [])
+
+  // 즐겨찾기 토글
+  const toggleFavorite = useCallback(async (id: string): Promise<void> => {
+    const memo = memos.find(m => m.id === id)
+    if (!memo) return
+    const newValue = !memo.isFavorite
+    setMemos(prev => prev.map(m => (m.id === id ? { ...m, isFavorite: newValue } : m)))
+    try {
+      await memoStorage.toggleFavorite(id, newValue)
+    } catch {
+      setMemos(prev => prev.map(m => (m.id === id ? { ...m, isFavorite: memo.isFavorite } : m)))
+    }
+  }, [memos])
 
   // 요약 업데이트
   const updateSummary = useCallback(async (id: string, summary: string): Promise<void> => {
@@ -111,8 +128,12 @@ export const useMemos = () => {
       )
     }
 
-    return filtered
-  }, [memos, selectedCategory, searchQuery])
+    return [...filtered].sort((a, b) => {
+      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1
+      const diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      return sortOrder === 'newest' ? -diff : diff
+    })
+  }, [memos, selectedCategory, searchQuery, sortOrder])
 
   // 모든 메모 삭제
   const clearAllMemos = useCallback(async (): Promise<void> => {
@@ -147,6 +168,7 @@ export const useMemos = () => {
     loading,
     searchQuery,
     selectedCategory,
+    sortOrder,
     stats,
 
     // 메모 CRUD
@@ -155,10 +177,12 @@ export const useMemos = () => {
     deleteMemo,
     getMemoById,
     updateSummary,
+    toggleFavorite,
 
     // 필터링 & 검색
     searchMemos,
     filterByCategory,
+    setSortOrder,
 
     // 유틸리티
     clearAllMemos,

@@ -5,6 +5,7 @@ export interface Memo {
   category: string
   tags: string[]
   summary?: string
+  isFavorite: boolean
   createdAt: string
   updatedAt: string
 }

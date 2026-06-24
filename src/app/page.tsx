@@ -13,13 +13,16 @@ export default function Home() {
     loading,
     searchQuery,
     selectedCategory,
+    sortOrder,
     stats,
     createMemo,
     updateMemo,
     deleteMemo,
     updateSummary,
+    toggleFavorite,
     searchMemos,
     filterByCategory,
+    setSortOrder,
   } = useMemos()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -100,11 +103,14 @@ export default function Home() {
           loading={loading}
           searchQuery={searchQuery}
           selectedCategory={selectedCategory}
+          sortOrder={sortOrder}
           onSearchChange={searchMemos}
           onCategoryChange={filterByCategory}
+          onSortChange={setSortOrder}
           onViewMemo={handleViewMemo}
           onEditMemo={handleEditMemo}
           onDeleteMemo={deleteMemo}
+          onToggleFavorite={toggleFavorite}
           stats={stats}
         />
       </main>

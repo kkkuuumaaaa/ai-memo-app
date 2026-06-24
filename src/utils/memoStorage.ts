@@ -8,6 +8,7 @@ interface MemoRow {
   category: string
   tags: string[]
   summary: string | null
+  is_favorite: boolean
   created_at: string
   updated_at: string
 }
@@ -20,6 +21,7 @@ function mapRowToMemo(row: MemoRow): Memo {
     category: row.category,
     tags: row.tags,
     summary: row.summary ?? undefined,
+    isFavorite: row.is_favorite,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -48,6 +50,7 @@ export const memoStorage = {
       category: memo.category,
       tags: memo.tags,
       summary: memo.summary ?? null,
+      is_favorite: memo.isFavorite,
       created_at: memo.createdAt,
       updated_at: memo.updatedAt,
     })
@@ -67,12 +70,25 @@ export const memoStorage = {
         category: updatedMemo.category,
         tags: updatedMemo.tags,
         summary: updatedMemo.summary ?? null,
+        is_favorite: updatedMemo.isFavorite,
         updated_at: updatedMemo.updatedAt,
       })
       .eq('id', updatedMemo.id)
 
     if (error) {
       console.error('Error updating memo:', error)
+      throw error
+    }
+  },
+
+  toggleFavorite: async (id: string, isFavorite: boolean): Promise<void> => {
+    const { error } = await supabase
+      .from('memos')
+      .update({ is_favorite: isFavorite })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error toggling favorite:', error)
       throw error
     }
   },
@@ -159,6 +175,7 @@ export const memoStorage = {
       category: memo.category,
       tags: memo.tags,
       summary: memo.summary ?? null,
+      is_favorite: memo.isFavorite,
       created_at: memo.createdAt,
       updated_at: memo.updatedAt,
     }))
